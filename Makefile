@@ -1,6 +1,6 @@
 # Leon Okida e Pedro Willian
 
-CFLAGS = -lm -Wall -std=c99 # compilation flag
+CFLAGS = -g -lm -Wall -std=c99 # compilation flag
 
 all: mydht
 

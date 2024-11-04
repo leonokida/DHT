@@ -1,20 +1,32 @@
 // Leon Okida e Pedro Willian
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
+typedef struct finger finger;
 typedef struct dht_node dht_node;
-struct dht_node
-{
+
+struct dht_node {
     int id;
     int *table;
+    finger *finger_table;
     int table_size;
-    int *finger_table;
     int finger_table_size;
+    dht_node *next;
 };
 
-// inserts dht node in order in the ring
-void insert_node(dht_node **dht_table, int *size, int id);
+struct finger {
+    int finger;
+    dht_node *node;
+};
 
-// removes node from the ring
-void remove_node(dht_node **dht_table, int *size, int id);
+// Initializes the DHT variables
+void initialize_dht(dht_node **dht_table, int *size);
+
+// Inserts the DHT node in order in the ring, increments size of the DHT
+void insert_node(dht_node **dht_table, int id, int *size);
+
+// Removes the DHT node from the ring, decrements the size of the DHT
+void remove_node(dht_node **dht_table, int id, int *size);
+
+// Prints contents of the DHT
+void print_dht(dht_node *dht_table);
