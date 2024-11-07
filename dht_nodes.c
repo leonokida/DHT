@@ -96,33 +96,35 @@ void insert_node(dht_node **dht_table, int id, int *size) {
     } while (itr != *dht_table);
 }
 
-dht_node *key_lookup(dht_node *dht_table, int key) {
+dht_node *key_lookup(dht_node **dht_table, int key) {
     // Checks if the key is stored in the current node
-    if (key <= dht_table->id)
-        return dht_table;
+    if (key <= (*dht_table)->id)
+        return *dht_table;
 
     // The key is greater than the last node, so it's in the first node
-    if ((dht_table->id > dht_table->next->id) && (key > dht_table->id)) 
-        return dht_table->next;
+    if (((*dht_table)->id > (*dht_table)->next->id) && (key > (*dht_table)->id)) 
+        return (*dht_table)->next;
 
     // Uses the finger table to find the closest preceding node for the key
-    for (int i = dht_table->finger_table_size - 1; i >= 0; i--) {
-        int finger_value = dht_table->finger_table[i].finger;
-        dht_node *node = dht_table->finger_table[i].node;
+    for (int i = (*dht_table)->finger_table_size - 1; i >= 0; i--) {
+        int finger_value = (*dht_table)->finger_table[i].finger;
+        dht_node *node = (*dht_table)->finger_table[i].node;
 
         // Found candidate node for routing
-        if (finger_value <= key && finger_value > dht_table->id) {
-            return key_lookup(node, key);
+        if (finger_value <= key && finger_value > (*dht_table)->id) {
+            return key_lookup(&node, key);
         }
     }
 
-    // Didn't find a candidate, try the next node
-    return dht_table->next;
+    // Didn't find a candidate, return the furthest node
+    return (*dht_table)->finger_table[(*dht_table)->finger_table_size - 1].node;
 }
 
 void insert_key(dht_node **dht_table, int key) {
-    (*dht_table)->table[(*dht_table)->table_size] = key;
-    (*dht_table)->table_size+=1;
+    dht_node *node_to_insert;
+    node_to_insert = key_lookup(dht_table, key);
+    node_to_insert->table[node_to_insert->table_size] = key;
+    node_to_insert->table_size+=1;
 }
 
 int search_key(dht_node *dht_table, int key) {

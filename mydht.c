@@ -20,9 +20,5 @@ int main() {
 
     print_dht(dht);
 
-    remove_node(&dht, 16, &size_dht);
-
-    print_dht(dht);
-
     return 0;
 }
