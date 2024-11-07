@@ -20,11 +20,9 @@ int main() {
 
     print_dht(dht);
 
-    int result_lookup1 = key_lookup(dht, 15)->id; // 16
-    int result_lookup2 = key_lookup(dht, 23)->id; // 24
-    int result_lookup3 = key_lookup(dht, 53)->id; // 8
+    remove_node(&dht, 16, &size_dht);
 
-    printf("Results from Lookups: %d, %d, %d\n", result_lookup1, result_lookup2, result_lookup3);
+    print_dht(dht);
 
     return 0;
 }

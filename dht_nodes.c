@@ -120,6 +120,19 @@ dht_node *key_lookup(dht_node *dht_table, int key) {
     return dht_table->next;
 }
 
+void insert_key(dht_node **dht_table, int key) {
+    (*dht_table)->table[(*dht_table)->table_size] = key;
+    (*dht_table)->table_size+=1;
+}
+
+int search_key(dht_node *dht_table, int key) {
+    for (int i = 0; i < dht_table->table_size; i++) {
+        if (dht_table->table[i] == key)
+            return 1;
+    }
+    return 0;
+}
+
 void print_dht(dht_node *dht_table) {
     if (dht_table == NULL) {
         printf("DHT is empty\n");
@@ -136,4 +149,37 @@ void print_dht(dht_node *dht_table) {
         printf("######\n");
         itr = itr->next;
     } while (itr != dht_table);
+}
+
+void remove_node(dht_node **dht_table, int id, int *size) {
+    dht_node *itr = *dht_table;
+    dht_node *prev;
+
+    do {
+        prev = itr;
+        itr = itr->next;
+    } while((itr->id != id) && (itr != *dht_table));
+
+    if (itr->id == id) {
+        if (itr == *dht_table) {
+            dht_table = &(itr->next);
+        }
+
+        prev->next = itr->next;
+        dht_node *next = itr->next;
+        for (int i = 0; i < itr->table_size; i++) {
+            next->table[next->table_size] = itr->table[i];
+            next->table_size += 1;
+        }
+        free(itr);
+
+        *size -= 1;
+        // Updates the finger table of each node
+        itr = *dht_table;
+        int m = ceil(log2(find_greatest_key(*dht_table)));
+        do {
+            update_finger_table(&itr, *dht_table, m);
+            itr = itr->next;
+        } while (itr != *dht_table);
+    }
 }

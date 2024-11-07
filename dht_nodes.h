@@ -31,5 +31,11 @@ void remove_node(dht_node **dht_table, int id, int *size);
 // Lookup routing
 dht_node *key_lookup(dht_node *dht_table, int key);
 
+// Insert key
+void insert_key(dht_node **dht_table, int key);
+
+// Search key in node
+int search_key(dht_node *dht_table, int key);
+
 // Prints contents of the DHT
 void print_dht(dht_node *dht_table);
