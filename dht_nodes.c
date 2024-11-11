@@ -98,23 +98,23 @@ void insert_node(dht_node **dht_table, int id, int *size) {
 
 dht_node *key_lookup(dht_node **dht_table, int key) {
     // Checks if the key is stored in the current node
-    printf("foi aq %d", key);
     if (key <= (*dht_table)->id)
         return *dht_table;
-    printf("aaaa passou daq");
     // The key is greater than the last node, so it's in the first node
     if (((*dht_table)->id > (*dht_table)->next->id) && (key > (*dht_table)->id)) 
         return (*dht_table)->next;
 
     // Uses the finger table to find the closest preceding node for the key
-    printf("%d", (*dht_table)->finger_table_size - 1);
     for (int i = (*dht_table)->finger_table_size - 1; i >= 0; i--) {
         int finger_value = (*dht_table)->finger_table[i].finger;
         dht_node *node = (*dht_table)->finger_table[i].node;
 
         // Found candidate node for routing
         if (finger_value <= key && finger_value > (*dht_table)->id) {
-            return key_lookup(&node, key);
+            if (node != *dht_table)
+                return key_lookup(&node, key);
+            else
+                return node;
         }
     }
 
@@ -124,12 +124,10 @@ dht_node *key_lookup(dht_node **dht_table, int key) {
 
 void insert_key(dht_node **dht_table, int key) {
     dht_node *node_to_insert;
-    printf("cheguei aqui 1\n");
     node_to_insert = key_lookup(dht_table, key);
     if (node_to_insert == NULL){
         return;
     }
-    printf("cheguei aqui 2\n");
     node_to_insert->table[node_to_insert->table_size] = key;
     node_to_insert->table_size+=1;
 }
