@@ -121,7 +121,10 @@ dht_node *key_lookup(dht_node **dht_table, int key, dht_node **visited_nodes, in
     }
 
     // Didn't find a candidate, return the furthest node
-    return (*dht_table)->finger_table[(*dht_table)->finger_table_size - 1].node;
+    if ((*dht_table)->finger_table_size > 0)
+        return (*dht_table)->finger_table[(*dht_table)->finger_table_size - 1].node;
+    else
+        return NULL;
 }
 
 void insert_key(dht_node **dht_table, int key, dht_node **visited_nodes, int *visited_count) {
