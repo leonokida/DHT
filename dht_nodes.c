@@ -88,7 +88,6 @@ void insert_node(dht_node **dht_table, int id, int *size) {
         new_node->next = current;
         *size += 1;
     }
-
     // Updates the finger table of each node
     dht_node *itr = *dht_table;
     int m = ceil(log2(find_greatest_key(*dht_table)));
@@ -98,7 +97,8 @@ void insert_node(dht_node **dht_table, int id, int *size) {
     } while (itr != *dht_table);
 }
 
-dht_node *key_lookup(dht_node **dht_table, int key) {
+dht_node *key_lookup(dht_node **dht_table, int key, dht_node **visited_nodes, int *visited_count) {
+    visited_nodes[(*visited_count)++] = *dht_table;
     // Checks if the key is stored in the current node
     if (key <= (*dht_table)->id)
         return *dht_table;
@@ -114,7 +114,7 @@ dht_node *key_lookup(dht_node **dht_table, int key) {
         // Found candidate node for routing
         if (finger_value <= key && finger_value > (*dht_table)->id) {
             if (node != *dht_table)
-                return key_lookup(&node, key);
+                return key_lookup(&node, key, visited_nodes, visited_count);
             else
                 return node;
         }
@@ -124,9 +124,9 @@ dht_node *key_lookup(dht_node **dht_table, int key) {
     return (*dht_table)->finger_table[(*dht_table)->finger_table_size - 1].node;
 }
 
-void insert_key(dht_node **dht_table, int key) {
+void insert_key(dht_node **dht_table, int key, dht_node **visited_nodes, int *visited_count) {
     dht_node *node_to_insert;
-    node_to_insert = key_lookup(dht_table, key);
+    node_to_insert = key_lookup(dht_table, key, visited_nodes, visited_count);
     if (node_to_insert == NULL){
         return;
     }

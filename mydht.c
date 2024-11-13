@@ -13,12 +13,15 @@ int main() {
     int node_id;
     int key;
     char line[100];
+    dht_node **visited_nodes = calloc(30, sizeof(dht_node*));
+    int visited_count;
 
     while (fgets(line, sizeof(line), stdin) != NULL) {
+        visited_count = 0;
         sscanf(line, "%d %c %d %d", &timestamp, &operation, &node_id, &key);
         dht_node *itr;
 
-        printf("Timestamp: %d, Operation: %c, Node ID: %d \n", timestamp, operation, node_id);
+        //printf("Timestamp: %d, Operation: %c, Node ID: %d \n", timestamp, operation, node_id);
         // if (operation == 'I' || operation == 'L') {
         //     printf(", Key: %d", key);
         // }
@@ -38,7 +41,7 @@ int main() {
                 do {
                     itr = itr->next;
                 } while ((itr->id != node_id));
-                insert_key(&itr, key);
+                insert_key(&itr, key, visited_nodes, &visited_count);
                 break;
 
             case 'L': {  // Lookup de chave
@@ -46,26 +49,26 @@ int main() {
                 do {
                     itr = itr->next;
                 } while ((itr->id != node_id));
-                dht_node *found_node = key_lookup(&itr, key);
+                //Inicia Lookup
+                key_lookup(&itr, key, visited_nodes, &visited_count);
 
+                // Imprime resultados
                 printf("%d L %d {", timestamp, key);
-                dht_node *route = dht_table;
-                while (route != found_node) {
-                    printf("%d, ", route->id);
-                    route = route->next;
+                for (int i = 0; i < visited_count; i++) {
+                    printf("%d", visited_nodes[i]->id);
+                    if (i < visited_count - 1)
+                        printf(",");
                 }
-                printf("%d}\n", found_node->id);
+                printf("}\n");
 
-                route = dht_table;
-                while (route != found_node->next) {
-                    printf("%d T %d {", timestamp, route->id);
-                    for (int i = 0; i < route->finger_table_size; i++) {
-                        printf("%d", route->finger_table[i].node->id);
-                        if (i < route->finger_table_size - 1)
-                            printf(", ");
+                for (int i = 0; i < visited_count; i++) {
+                    printf("%d T %d {", timestamp, visited_nodes[i]->id);
+                    for (int j = 0; j < visited_nodes[i]->finger_table_size; j++) {
+                        printf("%d", visited_nodes[i]->finger_table[j].node->id);
+                        if (j < visited_nodes[i]->finger_table_size - 1)
+                            printf(",");
                     }
                     printf("}\n");
-                    route = route->next;
                 }
                 break;
             }

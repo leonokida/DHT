@@ -29,10 +29,10 @@ void insert_node(dht_node **dht_table, int id, int *size);
 void remove_node(dht_node **dht_table, int id, int *size);
 
 // Lookup routing
-dht_node *key_lookup(dht_node **dht_table, int key);
+dht_node *key_lookup(dht_node **dht_table, int key, dht_node **visited_nodes, int *visited_count);
 
 // Insert key
-void insert_key(dht_node **dht_table, int key);
+void insert_key(dht_node **dht_table, int key, dht_node **visited_nodes, int *visited_count);
 
 // Search key in node
 int search_key(dht_node *dht_table, int key);
