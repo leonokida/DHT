@@ -60,6 +60,7 @@ void insert_node(dht_node **dht_table, int id, int *size) {
     // Empty DHT
     if (*dht_table == NULL) {
         *dht_table = new_node;
+        *size += 1;
         return;
     }
 
@@ -73,19 +74,20 @@ void insert_node(dht_node **dht_table, int id, int *size) {
         }
         current->next = new_node;
         new_node->next = *dht_table;
-        dht_table = &(new_node);
-        return;
+        *dht_table = new_node;
+        *size += 1;
     }
+    else {
+        // Inserting at the middle or the end of the ring
+        do {
+            prev = current;
+            current = current->next;
+        } while (current != *dht_table && current->id < id);
 
-    // Inserting at the middle or the end of the ring
-    do {
-        prev = current;
-        current = current->next;
-    } while (current != *dht_table && current->id < id);
-
-    prev->next = new_node;
-    new_node->next = current;
-    *size += 1;
+        prev->next = new_node;
+        new_node->next = current;
+        *size += 1;
+    }
 
     // Updates the finger table of each node
     dht_node *itr = *dht_table;
@@ -141,13 +143,14 @@ int search_key(dht_node *dht_table, int key) {
 }
 
 void print_dht(dht_node *dht_table) {
+    printf("PRINTING DHT\n");
     if (dht_table == NULL) {
         printf("DHT is empty\n");
         return;
     }
     dht_node *itr = dht_table;
     do {
-        printf("%d\n", itr->id);
+        printf("Node %d\n", itr->id);
         printf("Finger table:\n");
         for (int i = 0; i < itr->finger_table_size; i++) {
             printf("    finger: %d\n", itr->finger_table[i].finger);
@@ -160,33 +163,53 @@ void print_dht(dht_node *dht_table) {
 
 void remove_node(dht_node **dht_table, int id, int *size) {
     dht_node *itr = *dht_table;
-    dht_node *prev;
+    dht_node *prev = NULL;
 
+    // Find the node to remove
     do {
+        if (itr->id == id) break;
         prev = itr;
         itr = itr->next;
-    } while((itr->id != id) && (itr != *dht_table));
+    } while (itr != *dht_table);
 
+    // If the node with the specified id is found
     if (itr->id == id) {
+        // removing first node
         if (itr == *dht_table) {
-            dht_table = &(itr->next);
+            if (itr->next == itr) {
+                *dht_table = NULL;
+            }
+            else {
+                *dht_table = itr->next;
+                dht_node *last = *dht_table;
+                while (last->next != itr) {
+                    last = last->next;
+                }
+                last->next = *dht_table;
+            }
+        }
+        else {
+            prev->next = itr->next; // Remove itr by linking prev to itr's next node
         }
 
-        prev->next = itr->next;
+        // Transfer itr's table to the next node
         dht_node *next = itr->next;
         for (int i = 0; i < itr->table_size; i++) {
             next->table[next->table_size] = itr->table[i];
             next->table_size += 1;
         }
+        
         free(itr);
-
         *size -= 1;
-        // Updates the finger table of each node
-        itr = *dht_table;
-        int m = ceil(log2(find_greatest_key(*dht_table)));
-        do {
-            update_finger_table(&itr, *dht_table, m);
-            itr = itr->next;
-        } while (itr != *dht_table);
+
+        // Update the finger tables of all nodes
+        if (*dht_table != NULL) {
+            itr = *dht_table;
+            int m = ceil(log2(find_greatest_key(*dht_table)));
+            do {
+                update_finger_table(&itr, *dht_table, m);
+                itr = itr->next;
+            } while (itr != *dht_table);
+        }
     }
 }

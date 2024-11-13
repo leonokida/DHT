@@ -16,8 +16,9 @@ int main() {
 
     while (fgets(line, sizeof(line), stdin) != NULL) {
         sscanf(line, "%d %c %d %d", &timestamp, &operation, &node_id, &key);
+        dht_node *itr;
 
-        printf("Timestamp: %d, Operation: %c, Node ID: %d ", timestamp, operation, node_id);
+        printf("Timestamp: %d, Operation: %c, Node ID: %d \n", timestamp, operation, node_id);
         // if (operation == 'I' || operation == 'L') {
         //     printf(", Key: %d", key);
         // }
@@ -32,13 +33,20 @@ int main() {
                 break;
 
             case 'I':  // Inclusão de chave
-                printf("entrei");
-                insert_key(&dht_table, key);
-                printf("sai");
+                // encontra o nó correto para começar a operação
+                itr = dht_table;
+                do {
+                    itr = itr->next;
+                } while ((itr->id != node_id));
+                insert_key(&itr, key);
                 break;
 
             case 'L': {  // Lookup de chave
-                dht_node *found_node = key_lookup(&dht_table, key);
+                itr = dht_table;
+                do {
+                    itr = itr->next;
+                } while ((itr->id != node_id));
+                dht_node *found_node = key_lookup(&itr, key);
 
                 printf("%d L %d {", timestamp, key);
                 dht_node *route = dht_table;
